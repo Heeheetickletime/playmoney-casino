@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play-Money Blackjack</title>
+  <style>
+    body {
+      background: radial-gradient(circle, #064663, #041C32);
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 { margin-bottom: .3em; }
+    #table {
+      margin: 20px auto;
+      background: rgba(0,0,0,0.3);
+      border-radius: 15px;
+      padding: 20px;
+      width: 320px;
+    }
+    .hand { margin: 10px 0; }
+    button {
+      margin: 6px;
+      padding: 8px 18px;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #128C7E;
+      color: white;
+    }
+    button:hover { background: #1aa28f; }
+    #message { margin-top: 15px; font-weight: bold; }
+    a { color: #8edfff; }
+  </style>
+</head>
+<body>
+  <h1>♠️ Blackjack ♥️</h1>
+  <p><a href="index.html">← Back to Slots</a></p>
+
+  <div id="table">
+    <div class="hand"><strong>Dealer:</strong> <span id="dealer"></span></div>
+    <div class="hand"><strong>You:</strong> <span id="player"></span></div>
+    <p id="playerTotal"></p>
+
+    <button id="dealBtn" onclick="deal()">Deal</button>
+    <button id="hitBtn" onclick="hit()" disabled>Hit</button>
+    <button id="standBtn" onclick="stand()" disabled>Stand</button>
+
+    <p id="message"></p>
+  </div>
+
+  <script>
+    const deck = [];
+    const suits = ["♠", "♥", "♦", "♣"];
+    const values = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+    let playerHand = [], dealerHand = [], gameOver = false;
+
+    function buildDeck() {
+      deck.length = 0;
+      for (let s of suits)
+        for (let v of values)
+          deck.push({ value: v, suit: s });
+    }
+
+    function draw() {
+      return deck.splice(Math.floor(Math.random()*deck.length),1)[0];
+    }
+
+    function cardValue(card) {
+      if (["J","Q","K"].includes(card.value)) return 10;
+      if (card.value === "A") return 11;
+      return parseInt(card.value);
+    }
+
+    function handValue(hand) {
+      let total = 0, aces = 0;
+      for (let c of hand) {
+        total += cardValue(c);
+        if (c.value === "A") aces++;
+      }
+      while (total > 21 && aces > 0) {
+        total -= 10; aces--;
+      }
+      return total;
+    }
+
+    function displayHands(showDealerHole=false) {
+      document.getElementById("player").textContent =
+        playerHand.map(c => c.value + c.suit).join(" ");
+      document.getElementById("playerTotal").textContent =
+        "Your total: " + handValue(playerHand);
+
+      document.getElementById("dealer").textContent =
+        showDealerHole
+          ? dealerHand.map(c => c.value + c.suit).join(" ")
+          : dealerHand[0].value + dealerHand[0].suit + " [hidden]";
+    }
+
+    function deal() {
+      buildDeck();
+      playerHand = [draw(), draw()];
+      dealerHand = [draw(), draw()];
+      gameOver = false;
+      document.getElementById("message").textContent = "";
+      displayHands();
+      document.getElementById("dealBtn").disabled = true;
+      document.getElementById("hitBtn").disabled = false;
+      document.getElementById("standBtn").disabled = false;
+    }
+
+    function hit() {
+      if (gameOver) return;
+      playerHand.push(draw());
+      displayHands();
+      if (handValue(playerHand) > 21) endGame();
+    }
+
+    function stand() {
+      if (gameOver) return;
+      while (handValue(dealerHand) < 17) dealerHand.push(draw());
+      endGame();
+    }
+
+    function endGame() {
+      const playerTotal = handValue(playerHand);
+      const dealerTotal = handValue(dealerHand);
+      displayHands(true);
+      let msg = "";
+
+      if (playerTotal > 21) msg = "You busted! Dealer wins.";
+      else if (dealerTotal > 21) msg = "Dealer busted! You win!";
+      else if (playerTotal > dealerTotal) msg = "You win!";
+      else if (playerTotal < dealerTotal) msg = "Dealer wins.";
+      else msg = "Push (tie).";
+
+      document.getElementById("message").textContent = msg;
+      gameOver = true;
+      document.getElementById("dealBtn").disabled = false;
+      document.getElementById("hitBtn").disabled = true;
+      document.getElementById("standBtn").disabled = true;
+    }
+  </script>
+</body>
+</html>
