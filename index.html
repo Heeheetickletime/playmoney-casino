@@ -6,112 +6,152 @@
   <title>Play-Money Casino</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #2b1055, #7597de);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at center, #1b0026, #000);
       color: white;
       text-align: center;
       margin: 0;
       padding: 0;
+      overflow-x: hidden;
     }
     header {
-      background: rgba(0, 0, 0, 0.3);
-      padding: 1em;
-      font-size: 1.5em;
+      background: linear-gradient(90deg, #440088, #8900ff);
+      padding: 1.2em;
+      font-size: 1.7em;
       font-weight: bold;
+      box-shadow: 0 0 20px #8900ff;
     }
     .slot-container {
       margin-top: 2em;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
       border-radius: 15px;
       display: inline-block;
-      padding: 20px;
+      padding: 30px 40px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+      transition: transform 0.3s ease;
+    }
+    .slot-container:hover { transform: scale(1.02); }
+    .reels {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1em;
     }
     .reel {
       font-size: 4em;
-      display: inline-block;
-      margin: 0 10px;
+      margin: 0 15px;
+      width: 1em;
+      transition: transform 0.5s ease;
+    }
+    .reel.spin {
+      animation: spin 0.5s ease-in-out 3;
+    }
+    @keyframes spin {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-25px) rotate(10deg); }
+      100% { transform: translateY(0); }
+    }
+    #coins {
+      font-size: 1.3em;
+      margin-bottom: 10px;
+      color: #00ffb7;
+      text-shadow: 0 0 10px #00ffb7;
+      font-weight: bold;
+      transition: color 0.3s ease;
     }
     button {
       margin-top: 1em;
-      padding: 10px 20px;
-      font-size: 1em;
+      padding: 12px 25px;
+      font-size: 1.1em;
       border: none;
       border-radius: 8px;
-      background-color: #ff6b6b;
+      background-color: #ff0077;
       color: white;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
     }
     button:hover {
-      background-color: #ff8787;
+      background-color: #ff3399;
+      transform: scale(1.05);
     }
     footer {
       margin-top: 3em;
       font-size: 0.8em;
       opacity: 0.8;
     }
+    .link-btn {
+      background: #00aaff;
+      margin-left: 10px;
+    }
+    .link-btn:hover { background: #33bbff; }
   </style>
 </head>
 <body>
   <header>🎰 Play-Money Casino 🎰</header>
 
   <main>
-    <p>Welcome! Try your luck — this is 100% play-money only.</p>
+    <p>Try your luck — it’s all play-money fun!</p>
 
     <div class="slot-container">
-      <div class="reel" id="reel1">🍒</div>
-      <div class="reel" id="reel2">🍋</div>
-      <div class="reel" id="reel3">⭐</div>
-      <div>
-        <p id="coins">Coins: 1000</p>
-        <button onclick="spin()">Spin!</button>
+      <div id="coins">💰 Coins: 1,000</div>
+      <div class="reels">
+        <div class="reel" id="reel1">🍒</div>
+        <div class="reel" id="reel2">🍋</div>
+        <div class="reel" id="reel3">⭐</div>
       </div>
+      <button onclick="spin()">Spin!</button>
+      <button class="link-btn" onclick="window.location='blackjack.html'">Play Blackjack 🃏</button>
+      <p id="result"></p>
     </div>
-
-    <p id="result"></p>
   </main>
 
   <footer>
-    Play-money demo — no real gambling or payments. © 2025
+    Play-money demo — no real gambling. © 2025
   </footer>
 
   <script>
     let coins = 1000;
-    const symbols = ["🍒", "🍋", "⭐", "🔔", "7️⃣"];
+    const symbols = ["🍒","🍋","⭐","🔔","7️⃣","🍀","💎"];
 
     function randomSymbol() {
       return symbols[Math.floor(Math.random() * symbols.length)];
     }
 
     function spin() {
-      if (coins < 10) {
+      if (coins < 50) {
         alert("You're out of coins! Refresh to restart.");
         return;
       }
 
-      coins -= 10;
+      coins -= 50;
+      document.getElementById("coins").textContent = "💰 Coins: " + coins.toLocaleString();
 
-      const r1 = randomSymbol();
-      const r2 = randomSymbol();
-      const r3 = randomSymbol();
+      const reels = [document.getElementById("reel1"), document.getElementById("reel2"), document.getElementById("reel3")];
+      reels.forEach(r => r.classList.add("spin"));
 
-      document.getElementById("reel1").textContent = r1;
-      document.getElementById("reel2").textContent = r2;
-      document.getElementById("reel3").textContent = r3;
+      setTimeout(() => {
+        const r1 = randomSymbol();
+        const r2 = randomSymbol();
+        const r3 = randomSymbol();
+        reels[0].textContent = r1;
+        reels[1].textContent = r2;
+        reels[2].textContent = r3;
+        reels.forEach(r => r.classList.remove("spin"));
 
-      if (r1 === r2 && r2 === r3) {
-        const win = 100;
+        let win = 0;
+        if (r1 === r2 && r2 === r3) {
+          win = 500;
+          document.getElementById("result").textContent = `🎉 JACKPOT! You win ${win} coins!`;
+        } else if (r1 === r2 || r2 === r3 || r1 === r3) {
+          win = 150;
+          document.getElementById("result").textContent = `Nice! Two of a kind — +${win} coins.`;
+        } else {
+          document.getElementById("result").textContent = "No match — try again!";
+        }
+
         coins += win;
-        document.getElementById("result").textContent = `🎉 Jackpot! You win ${win} coins!`;
-      } else if (r1 === r2 || r2 === r3 || r1 === r3) {
-        const win = 20;
-        coins += win;
-        document.getElementById("result").textContent = `Nice! Two of a kind. +${win} coins!`;
-      } else {
-        document.getElementById("result").textContent = "No match this time — try again!";
-      }
+        document.getElementById("coins").textContent = "💰 Coins: " + coins.toLocaleString();
 
-      document.getElementById("coins").textContent = "Coins: " + coins;
+      }, 1000);
     }
   </script>
 </body>
